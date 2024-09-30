@@ -72,10 +72,19 @@ export class LifeVisualization extends HTMLElement {
 
     const { lifeExpectancy, birthdate } = state;
     const today = new Date();
-    const age = today.getFullYear() - birthdate.getFullYear();
+    
+    // Calculate age more accurately
+    let age = today.getFullYear() - birthdate.getFullYear();
+    const monthDiff = today.getMonth() - birthdate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthdate.getDate())) {
+      age--;
+    }
+
+    // Calculate used and remaining percentages
     const usedPercentage = Math.round((age / lifeExpectancy) * 100);
     const remainingPercentage = 100 - usedPercentage;
 
+    // Calculate weeks more accurately
     const millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000;
     const weeksLived = Math.floor((today - birthdate) / millisecondsPerWeek);
     const totalWeeks = Math.floor(lifeExpectancy * 52.1429);

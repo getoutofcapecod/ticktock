@@ -20,10 +20,12 @@ export class InputForm extends HTMLElement {
           width: 100%;
         }
         form {
-          display: grid;
+          display: flex;
+          flex-direction: column;
           gap: 1rem;
+          width: 100%;
         }
-        select {
+        select, input[type="date"] {
           width: 100%;
           padding: 0.75rem;
           border: none;
@@ -31,6 +33,31 @@ export class InputForm extends HTMLElement {
           font-size: 1rem;
           background-color: var(--secondary-color, #333);
           color: var(--text-color, #f5f5f5);
+          appearance: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          margin: 0;  /* Remove default margin */
+          box-sizing: border-box;  /* Include padding in width calculation */
+        }
+        input[type="date"] {
+          /* Force date input to respect width */
+          min-width: 0;
+          max-width: 100%;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+          filter: invert(1);
+        }
+        input[type="date"]::-webkit-inner-spin-button {
+          display: none;
+        }
+        input[type="date"]::-webkit-clear-button {
+          display: none;
+        }
+        select {
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23f5f5f5' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 0.75rem center;
+          padding-right: 2.5rem;
         }
         button {
           width: 100%;
@@ -50,7 +77,7 @@ export class InputForm extends HTMLElement {
           transform: scale(0.98);
         }
         @media (max-width: 480px) {
-          select, button {
+          select, input[type="date"], button {
             font-size: 0.9rem;
             padding: 0.6rem;
           }
@@ -62,10 +89,7 @@ export class InputForm extends HTMLElement {
           <option value="male">Male</option>
           <option value="female">Female</option>
         </select>
-        <select id="birthYear" name="birthYear" required>
-          <option value="" disabled selected>Select birth year</option>
-          ${this.generateYearOptions()}
-        </select>
+        <input type="date" id="birthDate" name="birthDate" required>
         <select id="country" name="country" required>
           <option value="" disabled selected>Select country</option>
           <option value="USA">United States</option>
@@ -77,16 +101,6 @@ export class InputForm extends HTMLElement {
         <button type="submit">Visualize My Life</button>
       </form>
     `;
-  }
-
-  generateYearOptions() {
-    const currentYear = new Date().getFullYear();
-    const startYear = currentYear - 100;
-    let options = '';
-    for (let year = currentYear; year >= startYear; year--) {
-      options += `<option value="${year}">${year}</option>`;
-    }
-    return options;
   }
 
   attachEventListeners() {
@@ -102,7 +116,7 @@ export class InputForm extends HTMLElement {
     event.preventDefault();
     const formData = new FormData(event.target);
     const userData = Object.fromEntries(formData.entries());
-    if (!userData.gender || !userData.birthYear || !userData.country) {
+    if (!userData.gender || !userData.birthDate || !userData.country) {
       alert('Please fill in all fields.');
       return;
     }
@@ -110,7 +124,7 @@ export class InputForm extends HTMLElement {
       const lifeExpectancy = await fetchLifeExpectancy(userData.country, userData.gender);
       store.setState({
         lifeExpectancy,
-        birthdate: new Date(userData.birthYear, 0, 1),
+        birthdate: new Date(userData.birthDate),
       });
       this.style.display = 'none';
       document.getElementById('results').style.display = 'block';
