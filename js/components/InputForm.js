@@ -25,7 +25,7 @@ export class InputForm extends HTMLElement {
           gap: 1rem;
           width: 100%;
         }
-        select, input[type="date"] {
+        select, input[type="text"] {
           width: 100%;
           padding: 0.75rem;
           border: none;
@@ -36,26 +36,16 @@ export class InputForm extends HTMLElement {
           appearance: none;
           -webkit-appearance: none;
           -moz-appearance: none;
-          cursor: pointer;
+          box-sizing: border-box;
         }
-        select, input[type="date"], input[type="text"] {
+        select {
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23f5f5f5' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
           background-repeat: no-repeat;
           background-position: right 0.75rem center;
           padding-right: 2.5rem;
         }
-        input[type="date"]::-webkit-calendar-picker-indicator {
-          opacity: 0;
-          width: 100%;
-          height: 100%;
-          position: absolute;
-          top: 0;
-          left: 0;
-          cursor: pointer;
-        }
-        input[type="date"]::-webkit-inner-spin-button,
-        input[type="date"]::-webkit-clear-button {
-          display: none;
+        input[type="text"] {
+          padding-right: 0.75rem;
         }
         button {
           width: 100%;
@@ -74,8 +64,13 @@ export class InputForm extends HTMLElement {
         button:active {
           transform: scale(0.98);
         }
+        .error {
+          color: #ff4444;
+          font-size: 0.9rem;
+          margin-top: 0.25rem;
+        }
         @media (max-width: 480px) {
-          select, input[type="date"], input[type="text"], button {
+          select, input[type="text"], button {
             font-size: 0.9rem;
             padding: 0.6rem;
           }
@@ -87,7 +82,10 @@ export class InputForm extends HTMLElement {
           <option value="male">Male</option>
           <option value="female">Female</option>
         </select>
-        <input type="date" id="birthDate" name="birthDate" required>
+        <div>
+          <input type="text" id="birthDate" name="birthDate" placeholder="Enter birth date (MM/DD/YYYY)" required>
+          <div class="error" id="dateError" style="display:none;"></div>
+        </div>
         <select id="country" name="country" required>
           <option value="" disabled selected>Select country</option>
           <option value="USA">United States</option>
@@ -112,57 +110,61 @@ export class InputForm extends HTMLElement {
     }
 
     if (dateInput) {
-      dateInput.addEventListener('change', this.formatDate.bind(this));
-      dateInput.addEventListener('focus', (e) => {
-        if (!e.target.value) {
-          e.target.type = 'date';
-        }
-      });
-      dateInput.addEventListener('blur', (e) => {
-        if (!e.target.value) {
-          e.target.type = 'text';
-        }
-      });
-      this.setMaxDate(dateInput);
-      // Set initial type to text for placeholder
-      dateInput.type = 'text';
-      dateInput.placeholder = 'Select birth date';
+      dateInput.addEventListener('blur', this.validateDate.bind(this));
     }
   }
 
-  formatDate(event) {
+  validateDate(event) {
     const input = event.target;
-    const date = new Date(input.value);
-    if (!isNaN(date.getTime())) {
-      const formattedDate = date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-      input.type = 'text';
-      input.value = formattedDate;
+    const dateError = this.shadowRoot.querySelector('#dateError');
+    const dateRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+    
+    if (!dateRegex.test(input.value)) {
+      dateError.textContent = 'Please enter a valid date in MM/DD/YYYY format.';
+      dateError.style.display = 'block';
+      return false;
     }
-  }
 
-  setMaxDate(input) {
+    const [month, day, year] = input.value.split('/');
+    const date = new Date(year, month - 1, day);
     const today = new Date();
-    const maxDate = today.toISOString().split('T')[0];
-    input.setAttribute('max', maxDate);
+
+    if (date > today) {
+      dateError.textContent = 'Birth date cannot be in the future.';
+      dateError.style.display = 'block';
+      return false;
+    }
+
+    if (date.getMonth() !== month - 1 || date.getDate() !== parseInt(day, 10)) {
+      dateError.textContent = 'Please enter a valid date.';
+      dateError.style.display = 'block';
+      return false;
+    }
+
+    dateError.style.display = 'none';
+    return true;
   }
 
   async handleSubmit(event) {
     event.preventDefault();
+    if (!this.validateDate({ target: this.shadowRoot.querySelector('#birthDate') })) {
+      return;
+    }
+
     const formData = new FormData(event.target);
     const userData = Object.fromEntries(formData.entries());
+    
     if (!userData.gender || !userData.birthDate || !userData.country) {
       alert('Please fill in all fields.');
       return;
     }
+
     try {
       const lifeExpectancy = await fetchLifeExpectancy(userData.country, userData.gender);
+      const [month, day, year] = userData.birthDate.split('/');
       store.setState({
         lifeExpectancy,
-        birthdate: new Date(userData.birthDate),
+        birthdate: new Date(year, month - 1, day),
       });
       this.style.display = 'none';
       document.getElementById('results').style.display = 'block';
