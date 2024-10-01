@@ -122,7 +122,7 @@ export class LifeVisualization extends HTMLElement {
     const totalWeeks = Math.floor(lifeExpectancy * 52.1429);
     const weeksRemaining = totalWeeks - weeksLived;
 
-    this.weeksInfoElement.innerHTML = `You've lived <span class="highlight">${weeksLived} weeks</span>. You have approximately <span class="highlight">${weeksRemaining} weeks</span> remaining.`;
+    this.weeksInfoElement.innerHTML = `You've lived <span class="highlight">${weeksLived} weeks</span>. You have approx. <span class="highlight">${weeksRemaining} weeks</span> left.`;
 
     if (this.chartElement.clientWidth > 0) {
       this.drawPieChart(usedPercentage, remainingPercentage);
@@ -130,7 +130,7 @@ export class LifeVisualization extends HTMLElement {
       requestAnimationFrame(() => this.update(state));
     }
 
-    this.journeyInfoElement.innerHTML = `What will you do with your last <span class="highlight">${remainingPercentage}%</span>?`;
+    this.journeyInfoElement.innerHTML = `Make your last <span class="highlight">${remainingPercentage}%</span> count.`;
   }
 
   drawPieChart(usedPercentage, remainingPercentage) {
