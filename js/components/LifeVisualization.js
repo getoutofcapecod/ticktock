@@ -179,27 +179,30 @@ export class LifeVisualization extends HTMLElement {
 
     // Create a group for the text elements
     const textGroup = svg.append('g')
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle');
+      .attr('text-anchor', 'middle');
 
     // Add the percentage text
-    textGroup.append('text')
+    const percentageText = textGroup.append('text')
       .attr('fill', '#f5f5f5')
       .style('font-size', `${width / 8}px`)
       .style('font-weight', 'bold')
-      .text(`${usedPercentage}%`);
+      .text(`${usedPercentage}%`)
+      .attr('dy', '-0.2em');
 
     // Add the 'of life lived' text
-    textGroup.append('text')
+    const subText = textGroup.append('text')
       .attr('fill', '#f5f5f5')
       .style('font-size', `${width / 16}px`)
-      .attr('dy', `${width / 10}px`)
-      .text('of life lived');
+      .text('of life lived')
+      .attr('dy', '1.5em');
 
     // Ensure the text group is centered
     const textBox = textGroup.node().getBBox();
-    const textWidth = textBox.width;
     const textHeight = textBox.height;
-    textGroup.attr('transform', `translate(0, ${-textHeight / 4})`);
+    textGroup.attr('transform', `translate(0, ${-textHeight / 8})`);
+
+    // Fine-tune positioning
+    percentageText.attr('y', radius * -0.05);
+    subText.attr('y', radius * 0.15);
   }
 }
