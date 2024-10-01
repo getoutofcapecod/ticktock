@@ -31,15 +31,15 @@ export class InputForm extends HTMLElement {
           border: none;
           border-radius: 4px;
           font-size: 1rem;
-          background-color: var(--secondary-color, #333);
-          color: var(--text-color, #f5f5f5);
+          background-color: #0c2b36;
+          color: #e8e9ea;
           appearance: none;
           -webkit-appearance: none;
           -moz-appearance: none;
           box-sizing: border-box;
         }
         select {
-          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23f5f5f5' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2340E0D0' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
           background-repeat: no-repeat;
           background-position: right 0.75rem center;
           padding-right: 2.5rem;
@@ -49,8 +49,8 @@ export class InputForm extends HTMLElement {
         }
         button {
           width: 100%;
-          background-color: var(--primary-color, #c24d2c);
-          color: var(--text-color, #f5f5f5);
+          background-color: #40E0D0;
+          color: #041a21;
           border: none;
           padding: 0.75rem 1.5rem;
           font-size: 1rem;
@@ -59,13 +59,13 @@ export class InputForm extends HTMLElement {
           transition: background-color 0.3s, transform 0.1s;
         }
         button:hover {
-          background-color: #a04028;
+          background-color: #3bcdc0;
         }
         button:active {
           transform: scale(0.98);
         }
         .error {
-          color: #ff4444;
+          color: #ff6b6b;
           font-size: 0.9rem;
           margin-top: 0.25rem;
         }

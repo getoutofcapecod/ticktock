@@ -1,7 +1,7 @@
 :root {
-  --primary-color: #c24d2c;
+  --primary-color: ##e8e9ea;
   --secondary-color: #333;
-  --background-color: #111;
+  --background-color: #041a21;
   --text-color: #f5f5f5;
   --accent-color: #4d7c8a;
   --font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -50,4 +50,10 @@ h1 {
   h1 {
     font-size: 2rem;
   }
+  .logo {
+  width: 300px;
+  height: auto;
+  padding-bottom: 20px;
+}
+
 }

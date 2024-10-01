@@ -26,9 +26,6 @@ export class LifeVisualization extends HTMLElement {
         :host {
           display: block;
           width: 100%;
-          font-family: 'Arial', sans-serif;
-          color: #f5f5f5;
-          background-color: #111;
           padding: 5% 5% 0;
           box-sizing: border-box;
         }
@@ -59,8 +56,16 @@ export class LifeVisualization extends HTMLElement {
           text-align: center;
         }
         .highlight {
-          color: #c24d2c;
+          color: #ff3947;
           font-weight: bold;
+        }
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.02); }
+          100% { transform: scale(1); }
+        }
+        .pulse {
+          animation: pulse 2s infinite;
         }
         @media (min-width: 400px) {
           .weeks-info, .journey-info {
@@ -145,7 +150,7 @@ export class LifeVisualization extends HTMLElement {
 
     const color = d3.scaleOrdinal()
       .domain(['used', 'remaining'])
-      .range(['#c24d2c', '#4a4a4a']);
+      .range(['#40E0D0', '#ff3947']);
 
     const pie = d3.pie()
       .value(d => d.value)
@@ -165,7 +170,7 @@ export class LifeVisualization extends HTMLElement {
       .enter()
       .append('path')
       .attr('fill', d => color(d.data.name))
-      .attr('stroke', '#111')
+      .attr('stroke', '#041a21')
       .attr('stroke-width', 2)
       .transition()
       .duration(1000)
@@ -177,6 +182,10 @@ export class LifeVisualization extends HTMLElement {
         };
       });
 
+    // Add pulsing effect to the 'remaining' arc
+    svg.select('path:nth-child(2)')
+      .classed('pulse', true);
+
     // Create a group for the text elements
     const textGroup = svg.append('g')
       .attr('text-anchor', 'middle')
@@ -184,14 +193,14 @@ export class LifeVisualization extends HTMLElement {
 
     // Add the percentage text
     textGroup.append('text')
-      .attr('fill', '#f5f5f5')
+      .attr('fill', '#e8e9ea')
       .style('font-size', `${width / 8}px`)
       .style('font-weight', 'bold')
       .text(`${usedPercentage}%`);
 
     // Add the 'of life lived' text
     textGroup.append('text')
-      .attr('fill', '#f5f5f5')
+      .attr('fill', '#e8e9ea')
       .style('font-size', `${width / 16}px`)
       .attr('dy', `${width / 10}px`)
       .text('of life lived');
