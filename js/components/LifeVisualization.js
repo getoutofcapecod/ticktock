@@ -26,41 +26,71 @@ export class LifeVisualization extends HTMLElement {
         :host {
           display: block;
           width: 100%;
-          max-width: 400px;
-          margin: 0 auto;
+          font-family: 'Arial', sans-serif;
+          color: #f5f5f5;
+          background-color: #111;
+          padding: 5% 5% 0;
+          box-sizing: border-box;
         }
-        .week-info {
+        .content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          width: 100%;
+        }
+        .weeks-info {
+          font-size: 1.2rem;
           text-align: center;
           margin-bottom: 1rem;
-          color: #f5f5f5;
+          line-height: 1.4;
+        }
+        .chart-container {
+          width: 100%;
+          max-width: 300px;
+          margin-bottom: 1rem;
+          aspect-ratio: 1 / 1;
         }
         #chart {
           width: 100%;
-          height: auto;
+          height: 100%;
         }
-        .text, .question {
-          text-align: center;
-          margin: 10px 0;
-        }
-        .text {
+        .journey-info {
           font-size: 1.2rem;
-          color: #f5f5f5;
+          text-align: center;
         }
-        .question {
-          font-size: 1.4rem;
+        .highlight {
           color: #c24d2c;
+          font-weight: bold;
+        }
+        @media (min-width: 400px) {
+          .weeks-info, .journey-info {
+            font-size: 1.4rem;
+          }
+          .chart-container {
+            max-width: 350px;
+          }
+        }
+        @media (min-width: 768px) {
+          .weeks-info, .journey-info {
+            font-size: 1.6rem;
+          }
+          .chart-container {
+            max-width: 400px;
+          }
         }
       </style>
-      <div class="week-info"></div>
-      <div id="chart"></div>
-      <div class="text"></div>
-      <div class="question"></div>
+      <div class="content">
+        <div class="weeks-info"></div>
+        <div class="chart-container">
+          <div id="chart"></div>
+        </div>
+        <div class="journey-info"></div>
+      </div>
     `;
 
-    this.weekInfoElement = this.shadowRoot.querySelector('.week-info');
+    this.weeksInfoElement = this.shadowRoot.querySelector('.weeks-info');
     this.chartElement = this.shadowRoot.querySelector('#chart');
-    this.textElement = this.shadowRoot.querySelector('.text');
-    this.questionElement = this.shadowRoot.querySelector('.question');
+    this.journeyInfoElement = this.shadowRoot.querySelector('.journey-info');
   }
 
   handleResize() {
@@ -73,24 +103,21 @@ export class LifeVisualization extends HTMLElement {
     const { lifeExpectancy, birthdate } = state;
     const today = new Date();
     
-    // Calculate age more accurately
     let age = today.getFullYear() - birthdate.getFullYear();
     const monthDiff = today.getMonth() - birthdate.getMonth();
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthdate.getDate())) {
       age--;
     }
 
-    // Calculate used and remaining percentages
     const usedPercentage = Math.round((age / lifeExpectancy) * 100);
     const remainingPercentage = 100 - usedPercentage;
 
-    // Calculate weeks more accurately
     const millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000;
     const weeksLived = Math.floor((today - birthdate) / millisecondsPerWeek);
     const totalWeeks = Math.floor(lifeExpectancy * 52.1429);
     const weeksRemaining = totalWeeks - weeksLived;
 
-    this.weekInfoElement.textContent = `${weeksLived} weeks lived | ${weeksRemaining} weeks remaining`;
+    this.weeksInfoElement.innerHTML = `You've lived <span class="highlight">${weeksLived} weeks</span>. You have approximately <span class="highlight">${weeksRemaining} weeks</span> remaining.`;
 
     if (this.chartElement.clientWidth > 0) {
       this.drawPieChart(usedPercentage, remainingPercentage);
@@ -98,8 +125,7 @@ export class LifeVisualization extends HTMLElement {
       requestAnimationFrame(() => this.update(state));
     }
 
-    this.textElement.textContent = `You've used ${usedPercentage}% of your estimated lifespan.`;
-    this.questionElement.textContent = `What will you do with the remaining ${remainingPercentage}%?`;
+    this.journeyInfoElement.innerHTML = `You've experienced <span class="highlight">${usedPercentage}%</span> of your estimated life journey.`;
   }
 
   drawPieChart(usedPercentage, remainingPercentage) {
@@ -119,14 +145,14 @@ export class LifeVisualization extends HTMLElement {
 
     const color = d3.scaleOrdinal()
       .domain(['used', 'remaining'])
-      .range(['#c24d2c', '#f5f5f5']);
+      .range(['#c24d2c', '#4a4a4a']);
 
     const pie = d3.pie()
       .value(d => d.value)
       .sort(null);
 
     const arc = d3.arc()
-      .innerRadius(0)
+      .innerRadius(radius * 0.6)
       .outerRadius(radius);
 
     const data = [
@@ -151,16 +177,29 @@ export class LifeVisualization extends HTMLElement {
         };
       });
 
-    svg.selectAll('.percentage-label')
-      .data(pie(data))
-      .enter()
-      .append('text')
-      .attr('class', 'percentage-label')
-      .attr('transform', d => `translate(${arc.centroid(d)})`)
-      .attr('dy', '.35em')
-      .style('text-anchor', 'middle')
-      .style('font-size', '12px')
-      .style('fill', '#111')
-      .text(d => `${d.data.value}%`);
+    // Create a group for the text elements
+    const textGroup = svg.append('g')
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'middle');
+
+    // Add the percentage text
+    textGroup.append('text')
+      .attr('fill', '#f5f5f5')
+      .style('font-size', `${width / 8}px`)
+      .style('font-weight', 'bold')
+      .text(`${usedPercentage}%`);
+
+    // Add the 'of life lived' text
+    textGroup.append('text')
+      .attr('fill', '#f5f5f5')
+      .style('font-size', `${width / 16}px`)
+      .attr('dy', `${width / 10}px`)
+      .text('of life lived');
+
+    // Ensure the text group is centered
+    const textBox = textGroup.node().getBBox();
+    const textWidth = textBox.width;
+    const textHeight = textBox.height;
+    textGroup.attr('transform', `translate(0, ${-textHeight / 4})`);
   }
 }
