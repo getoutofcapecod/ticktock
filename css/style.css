@@ -22,6 +22,11 @@ body {
   min-height: 100vh;
   padding: 20px;
 }
+  .logo {
+  width: 300px;
+  height: auto;
+  padding-bottom: 20px;
+}
 .container {
   max-width: 800px;
   width: 100%;
