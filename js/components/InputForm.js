@@ -71,9 +71,10 @@ export class InputForm extends HTMLElement {
           -webkit-appearance: none;
           -moz-appearance: none;
           box-sizing: border-box;
+          transition: border-color 0.3s, box-shadow 0.3s;
         }
         select {
-          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2340E0D0' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2345e6d6' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
           background-repeat: no-repeat;
           background-position: right 0.75rem center;
           padding-right: 2.5rem;
@@ -83,25 +84,50 @@ export class InputForm extends HTMLElement {
         }
         button {
           width: 100%;
-          background-color: #40E0D0;
+          background-color: #45e6d6;
           color: #041a21;
           border: none;
           padding: 0.75rem 1.5rem;
           font-size: 1rem;
           border-radius: 4px;
           cursor: pointer;
-          transition: background-color 0.3s, transform 0.1s;
+          transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
         }
         button:hover {
           background-color: #3bcdc0;
+          box-shadow: 0 4px 8px rgba(64, 224, 208, 0.3);
+          transform: translateY(-2px);
         }
         button:active {
           transform: scale(0.98);
         }
         .error {
-          color: #ff6b6b;
+          color: #ff4757;
           font-size: 0.9rem;
           margin-top: 0.25rem;
+          opacity: 0;
+          transition: opacity 0.3s ease-in-out;
+        }
+        .error.visible {
+          opacity: 1;
+        }
+        .loading-spinner {
+          display: none;
+          justify-content: center;
+          align-items: center;
+          height: 50px;
+        }
+        .spinner {
+          border: 3px solid rgba(64, 224, 208, 0.3);
+          border-radius: 50%;
+          border-top: 3px solid #45e6d6;
+          width: 30px;
+          height: 30px;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
         @media (max-width: 480px) {
           select, input[type="text"], button {
@@ -118,7 +144,7 @@ export class InputForm extends HTMLElement {
         </select>
         <div>
           <input type="text" id="birthDate" name="birthDate" placeholder="Enter birth date (MM/DD/YYYY)" required>
-          <div class="error" id="dateError" style="display:none;"></div>
+          <div class="error" id="dateError"></div>
         </div>
         <select id="country" name="country" required>
           <option value="" disabled selected>Select country</option>
@@ -129,25 +155,26 @@ export class InputForm extends HTMLElement {
           <option value="JPN">Japan</option>
         </select>
         <button type="submit">Visualize My Life</button>
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+        </div>
       </form>
     `;
   }
 
   attachEventListeners() {
-    requestAnimationFrame(() => {
-      const form = this.shadowRoot.querySelector('form');
-      const dateInput = this.shadowRoot.querySelector('#birthDate');
-      
-      if (form) {
-        form.addEventListener('submit', this.handleSubmit.bind(this));
-      } else {
-        console.error('Form element not found');
-      }
+    const form = this.shadowRoot.querySelector('form');
+    const dateInput = this.shadowRoot.querySelector('#birthDate');
+    
+    if (form) {
+      form.addEventListener('submit', this.handleSubmit.bind(this));
+    } else {
+      console.error('Form element not found');
+    }
 
-      if (dateInput) {
-        dateInput.addEventListener('blur', this.validateDate.bind(this));
-      }
-    });
+    if (dateInput) {
+      dateInput.addEventListener('blur', this.validateDate.bind(this));
+    }
   }
 
   validateDate(event) {
@@ -157,7 +184,7 @@ export class InputForm extends HTMLElement {
     
     if (!dateRegex.test(input.value)) {
       dateError.textContent = 'Please enter a valid date in MM/DD/YYYY format.';
-      dateError.style.display = 'block';
+      dateError.classList.add('visible');
       return false;
     }
 
@@ -167,17 +194,17 @@ export class InputForm extends HTMLElement {
 
     if (date > today) {
       dateError.textContent = 'Birth date cannot be in the future.';
-      dateError.style.display = 'block';
+      dateError.classList.add('visible');
       return false;
     }
 
     if (date.getMonth() !== month - 1 || date.getDate() !== parseInt(day, 10)) {
       dateError.textContent = 'Please enter a valid date.';
-      dateError.style.display = 'block';
+      dateError.classList.add('visible');
       return false;
     }
 
-    dateError.style.display = 'none';
+    dateError.classList.remove('visible');
     return true;
   }
 
@@ -195,6 +222,9 @@ export class InputForm extends HTMLElement {
       return;
     }
 
+    const loadingSpinner = this.shadowRoot.querySelector('.loading-spinner');
+    loadingSpinner.style.display = 'flex';
+
     try {
       const lifeExpectancy = await fetchLifeExpectancy(userData.country, userData.gender);
       const [month, day, year] = userData.birthDate.split('/');
@@ -202,15 +232,24 @@ export class InputForm extends HTMLElement {
         lifeExpectancy,
         birthdate: new Date(year, month - 1, day),
       });
-      this.style.display = 'none';
       
-      // Reset viewport before showing results
-      resetViewport();
-      
-      document.getElementById('results').style.display = 'block';
+      this.classList.add('fade-transition');
+      setTimeout(() => {
+        this.style.display = 'none';
+        this.classList.remove('fade-transition');
+        
+        resetViewport();
+        
+        const results = document.getElementById('results');
+        results.classList.add('fade-transition');
+        results.style.display = 'block';
+        setTimeout(() => results.classList.add('active'), 50);
+      }, 300);
     } catch (error) {
       console.error('Error processing life data:', error);
       alert('Unable to process data. Please try again.');
+    } finally {
+      loadingSpinner.style.display = 'none';
     }
   }
 }

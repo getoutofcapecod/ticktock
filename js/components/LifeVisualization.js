@@ -4,6 +4,7 @@ export class LifeVisualization extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
+    this.textAlternateInterval = null;
   }
 
   connectedCallback() {
@@ -17,6 +18,9 @@ export class LifeVisualization extends HTMLElement {
     window.removeEventListener('resize', this.handleResize.bind(this));
     if (this.unsubscribe) {
       this.unsubscribe();
+    }
+    if (this.textAlternateInterval) {
+      clearInterval(this.textAlternateInterval);
     }
   }
 
@@ -161,8 +165,25 @@ export class LifeVisualization extends HTMLElement {
       .sort(null);
 
     const arc = d3.arc()
-      .innerRadius(radius * 0.6)
-      .outerRadius(radius);
+      .innerRadius(radius * 0.65)
+      .outerRadius(radius)
+      .cornerRadius(4);
+
+    const gradient = svg.append("defs")
+      .append("linearGradient")
+      .attr("id", "gradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "100%")
+      .attr("y2", "100%");
+
+    gradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#45e6d6");
+
+    gradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#40E0D0");
 
     const data = [
       { name: 'used', value: usedPercentage },
@@ -173,45 +194,64 @@ export class LifeVisualization extends HTMLElement {
       .data(pie(data))
       .enter()
       .append('path')
-      .attr('fill', d => color(d.data.name))
+      .attr('fill', d => d.data.name === 'remaining' ? 'url(#gradient)' : color(d.data.name))
       .attr('stroke', '#041a21')
       .attr('stroke-width', 2)
-      .transition()
-      .duration(1000)
-      .attrTween('d', function(d) {
-        const i = d3.interpolate(d.startAngle, d.endAngle);
-        return function(t) {
-          d.endAngle = i(t);
-          return arc(d);
-        };
-      });
+      .attr('d', arc);
 
-    // Add pulsing effect to the 'remaining' arc
-    svg.select('path:nth-child(2)')
-      .classed('pulse', true);
-
-    // Create a group for the text elements
     const textGroup = svg.append('g')
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle');
 
-    // Add the percentage text
-    textGroup.append('text')
+    const percentageText = textGroup.append('text')
       .attr('fill', '#e8e9ea')
       .style('font-size', `${width / 8}px`)
       .style('font-weight', 'bold')
       .text(`${usedPercentage}%`);
 
-    // Add the 'of life lived' text
-    textGroup.append('text')
+    const descriptionText = textGroup.append('text')
       .attr('fill', '#e8e9ea')
       .style('font-size', `${width / 16}px`)
       .attr('dy', `${width / 10}px`)
       .text('of life lived');
 
-    // Ensure the text group is centered
     const textBox = textGroup.node().getBBox();
     const textHeight = textBox.height;
     textGroup.attr('transform', `translate(0, ${-textHeight / 8})`);
+
+    this.startTextAlternation(arcs, percentageText, descriptionText, usedPercentage, remainingPercentage);
+  }
+
+  startTextAlternation(arcs, percentageText, descriptionText, usedPercentage, remainingPercentage) {
+    let isLifeLived = true;
+
+    const updateText = () => {
+      if (isLifeLived) {
+        percentageText.text(`${usedPercentage}%`);
+        descriptionText.text(`of life lived`);
+        arcs.classed('pulse', (d, i) => i === 0);
+      } else {
+        percentageText.text(`${remainingPercentage}%`);
+        descriptionText.text(`of life left`);
+        arcs.classed('pulse', (d, i) => i === 1);
+      }
+      isLifeLived = !isLifeLived;
+    };
+
+    updateText();  // Initial text update
+
+    if (this.textAlternateInterval) {
+      clearInterval(this.textAlternateInterval);
+    }
+
+    this.textAlternateInterval = setInterval(() => {
+      percentageText.style('opacity', 0);
+      descriptionText.style('opacity', 0);
+      setTimeout(() => {
+        updateText();
+        percentageText.style('opacity', 1);
+        descriptionText.style('opacity', 1);
+      }, 300);  // Half of the interval for smooth transition
+    }, 6000);
   }
 }
