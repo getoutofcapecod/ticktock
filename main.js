@@ -1,6 +1,7 @@
 import { InputForm } from './js/components/InputForm.js';
 import { LifeVisualization } from './js/components/LifeVisualization.js';
 import { store } from './js/utils/state.js';
+import { resetViewport } from './js/utils/utils.js';
 
 // Define custom elements only if they haven't been defined yet
 if (!customElements.get('input-form')) {
@@ -12,6 +13,9 @@ if (!customElements.get('life-visualization')) {
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Application initialized');
+  
+  // Reset viewport on initial load
+  resetViewport();
   
   // Log initial state
   console.log('Initial state:', store.getState());

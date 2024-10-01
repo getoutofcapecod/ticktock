@@ -1,5 +1,6 @@
 import { store } from '../utils/state.js';
 import { fetchLifeExpectancy } from '../utils/dataFetcher.js';
+import { resetViewport } from '../utils/utils.js';
 
 export class InputForm extends HTMLElement {
   constructor() {
@@ -10,6 +11,39 @@ export class InputForm extends HTMLElement {
   connectedCallback() {
     this.render();
     this.attachEventListeners();
+    
+    this.handleInputFocus = this.handleInputFocus.bind(this);
+    this.handleInputBlur = this.handleInputBlur.bind(this);
+
+    requestAnimationFrame(() => {
+      const inputs = this.shadowRoot.querySelectorAll('input, select');
+      inputs.forEach(input => {
+        input.addEventListener('focus', this.handleInputFocus);
+        input.addEventListener('blur', this.handleInputBlur);
+      });
+    });
+  }
+
+  disconnectedCallback() {
+    const inputs = this.shadowRoot.querySelectorAll('input, select');
+    inputs.forEach(input => {
+      input.removeEventListener('focus', this.handleInputFocus);
+      input.removeEventListener('blur', this.handleInputBlur);
+    });
+  }
+
+  handleInputFocus(event) {
+    event.preventDefault();
+    event.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  handleInputBlur() {
+    if (document.documentElement.style.zoom) {
+      document.documentElement.style.zoom = 1;
+    } else {
+      document.documentElement.style.transform = 'scale(1)';
+    }
+    window.scrollTo(0, 0);
   }
 
   render() {
@@ -100,18 +134,20 @@ export class InputForm extends HTMLElement {
   }
 
   attachEventListeners() {
-    const form = this.shadowRoot.querySelector('form');
-    const dateInput = this.shadowRoot.querySelector('#birthDate');
-    
-    if (form) {
-      form.addEventListener('submit', this.handleSubmit.bind(this));
-    } else {
-      console.error('Form element not found');
-    }
+    requestAnimationFrame(() => {
+      const form = this.shadowRoot.querySelector('form');
+      const dateInput = this.shadowRoot.querySelector('#birthDate');
+      
+      if (form) {
+        form.addEventListener('submit', this.handleSubmit.bind(this));
+      } else {
+        console.error('Form element not found');
+      }
 
-    if (dateInput) {
-      dateInput.addEventListener('blur', this.validateDate.bind(this));
-    }
+      if (dateInput) {
+        dateInput.addEventListener('blur', this.validateDate.bind(this));
+      }
+    });
   }
 
   validateDate(event) {
@@ -167,6 +203,10 @@ export class InputForm extends HTMLElement {
         birthdate: new Date(year, month - 1, day),
       });
       this.style.display = 'none';
+      
+      // Reset viewport before showing results
+      resetViewport();
+      
       document.getElementById('results').style.display = 'block';
     } catch (error) {
       console.error('Error processing life data:', error);
