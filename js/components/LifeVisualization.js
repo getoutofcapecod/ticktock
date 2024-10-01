@@ -55,8 +55,12 @@ export class LifeVisualization extends HTMLElement {
           font-size: 1.2rem;
           text-align: center;
         }
-        .highlight {
+        .highlight-expired {
           color: #ff3947;
+          font-weight: bold;
+        }
+        .highlight-remaining {
+          color: #40E0D0;
           font-weight: bold;
         }
         @keyframes pulse {
@@ -122,7 +126,7 @@ export class LifeVisualization extends HTMLElement {
     const totalWeeks = Math.floor(lifeExpectancy * 52.1429);
     const weeksRemaining = totalWeeks - weeksLived;
 
-    this.weeksInfoElement.innerHTML = `You've lived <span class="highlight">${weeksLived} weeks</span>. You have approx. <span class="highlight">${weeksRemaining} weeks</span> left.`;
+    this.weeksInfoElement.innerHTML = `You've lived <span class="highlight-expired">${weeksLived} weeks</span>. You have approx. <span class="highlight-remaining">${weeksRemaining} weeks</span> left.`;
 
     if (this.chartElement.clientWidth > 0) {
       this.drawPieChart(usedPercentage, remainingPercentage);
@@ -130,7 +134,7 @@ export class LifeVisualization extends HTMLElement {
       requestAnimationFrame(() => this.update(state));
     }
 
-    this.journeyInfoElement.innerHTML = `Make your last <span class="highlight">${remainingPercentage}%</span> count.`;
+    this.journeyInfoElement.innerHTML = `Make your last <span class="highlight-remaining">${remainingPercentage}%</span> count.`;
   }
 
   drawPieChart(usedPercentage, remainingPercentage) {
@@ -150,7 +154,7 @@ export class LifeVisualization extends HTMLElement {
 
     const color = d3.scaleOrdinal()
       .domain(['used', 'remaining'])
-      .range(['#40E0D0', '#ff3947']);
+      .range(['#ff3947', '#40E0D0']);
 
     const pie = d3.pie()
       .value(d => d.value)
