@@ -36,21 +36,26 @@ export class InputForm extends HTMLElement {
           appearance: none;
           -webkit-appearance: none;
           -moz-appearance: none;
+          cursor: pointer;
         }
-        input[type="date"] {
-          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23f5f5f5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
-          background-repeat: no-repeat;
-          background-position: right 0.75rem center;
-          background-size: 1.5rem;
-        }
-        input[type="date"]::-webkit-calendar-picker-indicator {
-          opacity: 0;
-        }
-        select {
+        select, input[type="date"], input[type="text"] {
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23f5f5f5' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
           background-repeat: no-repeat;
           background-position: right 0.75rem center;
           padding-right: 2.5rem;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+          opacity: 0;
+          width: 100%;
+          height: 100%;
+          position: absolute;
+          top: 0;
+          left: 0;
+          cursor: pointer;
+        }
+        input[type="date"]::-webkit-inner-spin-button,
+        input[type="date"]::-webkit-clear-button {
+          display: none;
         }
         button {
           width: 100%;
@@ -70,7 +75,7 @@ export class InputForm extends HTMLElement {
           transform: scale(0.98);
         }
         @media (max-width: 480px) {
-          select, input[type="date"], button {
+          select, input[type="date"], input[type="text"], button {
             font-size: 0.9rem;
             padding: 0.6rem;
           }
@@ -108,7 +113,20 @@ export class InputForm extends HTMLElement {
 
     if (dateInput) {
       dateInput.addEventListener('change', this.formatDate.bind(this));
+      dateInput.addEventListener('focus', (e) => {
+        if (!e.target.value) {
+          e.target.type = 'date';
+        }
+      });
+      dateInput.addEventListener('blur', (e) => {
+        if (!e.target.value) {
+          e.target.type = 'text';
+        }
+      });
       this.setMaxDate(dateInput);
+      // Set initial type to text for placeholder
+      dateInput.type = 'text';
+      dateInput.placeholder = 'Select birth date';
     }
   }
 
@@ -121,6 +139,7 @@ export class InputForm extends HTMLElement {
         month: 'long',
         day: 'numeric'
       });
+      input.type = 'text';
       input.value = formattedDate;
     }
   }
