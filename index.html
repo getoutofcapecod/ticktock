@@ -1,29 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang=en>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Endtimer - Life Expectancy Tracking App</title>
-  <link rel="stylesheet" href="css/style-min.css?v=2.2">
-  <script src="https://d3js.org/d3.v6.min.js"></script>
-  <script type="module" src="main-min.js?v=2.2"></script>
-  <script>
-    document.addEventListener('touchmove', function(event) {
-      if (event.scale !== 1) { event.preventDefault(); }
-    }, { passive: false });
-    
-    document.addEventListener('dblclick', function(event) {
-      event.preventDefault();
-    }, { passive: false });
-  </script>
+<meta charset=UTF-8>
+<meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Endtimer - Life Expectancy Tracking App</title>
+<link rel=stylesheet href="css/style-min.css?v=2.2">
+<script src=https://d3js.org/d3.v6.min.js></script>
+<script type=module src="main-min.js?v=2.2"></script>
+<script>document.addEventListener("touchmove",(function(e){1!==e.scale&&e.preventDefault()}),{passive:!1}),document.addEventListener("dblclick",(function(e){e.preventDefault()}),{passive:!1})</script>
 </head>
 <body>
-  <div class="container">
-    <img src="endtimer.png" alt="Endtimer Logo" class="logo">
-    <input-form id="input-form"></input-form>
-    <div id="results" style="display: none;">
-      <life-visualization></life-visualization>
-    </div>
-  </div>
+<div class=container>
+<img src=endtimer.png alt="Endtimer Logo" class=logo>
+<input-form id=input-form></input-form>
+<div id=results style=display:none>
+<life-visualization></life-visualization>
+</div>
+</div>
 </body>
 </html>
