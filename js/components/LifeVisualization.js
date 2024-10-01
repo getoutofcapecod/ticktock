@@ -130,7 +130,7 @@ export class LifeVisualization extends HTMLElement {
       requestAnimationFrame(() => this.update(state));
     }
 
-    this.journeyInfoElement.innerHTML = `What will you do with the <span class="highlight">${remainingPercentage}%</span> of life remaining?`;
+    this.journeyInfoElement.innerHTML = `What will you do with your last <span class="highlight">${remainingPercentage}%</span>?`;
   }
 
   drawPieChart(usedPercentage, remainingPercentage) {
