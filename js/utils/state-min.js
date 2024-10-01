@@ -1,0 +1,1 @@
+let createStore=e=>{let t=e,r=new Set,l=e=>{t={...t,...e},r.forEach(e=>e(t))},a=e=>(r.add(e),()=>r.delete(e));return{getState:()=>t,setState:l,subscribe:a}};export const store=createStore({lifeExpectancy:null,birthdate:null});

@@ -1,0 +1,1 @@
+export function resetViewport(){document.body.style.display="none",document.body.offsetHeight,document.body.style.display="";let t=document.querySelector("meta[name=viewport]");t&&t.setAttribute("content",t.getAttribute("content")),window.scrollTo(0,0),document.documentElement.style.zoom=1,document.body.style.zoom=1}
